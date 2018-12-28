@@ -20,7 +20,7 @@ The goal of the project is to create a standalone (no PC) benchtop Can-Bus emula
 Some Application Examples: 
 - Functional Dashboard for Race Gaming Cockpit.
 - Custom Car Dashboard Conversions.
-- Automobile Instrument Cluster Tester.
+- Automobile / Motorbike Instrument Cluster Tester.
 
 ### Alternate Search Terms:
 CANBUS, CANBUSS, CAN-BUSS, OBD, OBD2, OBDII
