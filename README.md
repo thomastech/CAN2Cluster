@@ -1,7 +1,7 @@
 # Can2Cluster 
 Welcome to the Can2Cluster project. It is a Can-Bus emulator for Controlling Automotive Dashboard Instrument Clusters. Under development is a version for a 2005-2010 Ford Mustang instrument panel. Expansion to other Can-Bus controlled dashboards should be possible by end-user development of the Arduino firmware.
 
-![mustangcluster_250](https://user-images.githubusercontent.com/10354989/50652487-7a3fcf00-0f3b-11e9-8179-ce189b9ee0fc.jpg)
+![mustangcluster275](https://user-images.githubusercontent.com/10354989/50655679-b7a95a00-0f45-11e9-8c29-e3e9a20487e5.jpg)
 
 ### The Can2Cluster Team
 * Thomas B. (@thomastech, Project Originator)
