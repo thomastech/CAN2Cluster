@@ -18,17 +18,17 @@ Welcome to the CAN2Cluster project. It is a CAN-Bus emulator for Controlling Aut
 * Jan-04-2019: Received CAN-Bus Analyzer tool.
 
 ### Notes & Comments
-The goal of the project is to create a standalone benchtop Can-Bus emulator that controls the instrument cluster's gauges and warning lights. It is a minimal no-frills design that can be expanded by project builders to suit their application.
+The goal of the project is to create a standalone benchtop CAN-Bus emulator that controls the instrument cluster's gauges and warning lights. It is a minimal no-frills design that can be expanded by project builders to suit their application.
 
 Some Application Examples: 
 - Functional Dashboard for Race Gaming Cockpit.
 - Custom Car Dashboard Conversions.
 - Automobile / Motorbike Instrument Cluster Tester.
-- Functional dashboard display for education, art, or entertainment.
+- Animated dashboard display for education, art, or entertainment.
 
 ### Resources
-Sourceforge Ford Can-Bus: https://sourceforge.net/p/ecu/wiki/canbus/  
-OpenGarage Mazda Can-Bus: http://opengarages.org/index.php/Mazda_CAN_ID 
+Sourceforge Ford CAN-Bus: https://sourceforge.net/p/ecu/wiki/canbus/  
+OpenGarage Mazda CAN-Bus: http://opengarages.org/index.php/Mazda_CAN_ID 
 
 ### Alternate Search Terms:
 CANBus, CANBuss, CAN-Buss, OBD, OBD2, OBDII
