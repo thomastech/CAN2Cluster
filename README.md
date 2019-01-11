@@ -3,7 +3,7 @@ Welcome to the CAN2Cluster project. It is a CAN-Bus emulator for Controlling Aut
 
 ![mustangcluster275](https://user-images.githubusercontent.com/10354989/50655679-b7a95a00-0f45-11e9-8c29-e3e9a20487e5.jpg)
 
-### The Can2Cluster Team
+### The CAN2Cluster Team
 * Thomas B. (@thomastech, Project Originator)
 * YOUR Name Here.
 
@@ -24,6 +24,7 @@ Some Application Examples:
 - Functional Dashboard for Race Gaming Cockpit.
 - Custom Car Dashboard Conversions.
 - Automobile / Motorbike Instrument Cluster Tester.
+- Functional dashboard display for education, art, or entertainment.
 
 ### Resources
 Sourceforge Ford Can-Bus: https://sourceforge.net/p/ecu/wiki/canbus/  
