@@ -1,5 +1,5 @@
-# Can2Cluster 
-Welcome to the Can2Cluster project. It is a CAN-Bus emulator for Controlling Automotive Dashboard Instrument Clusters. Under development is a version for a 2005-2009 Ford Mustang instrument panel. Expansion to other CAN-Bus controlled dashboards should be possible by end-user development of the Arduino firmware.
+# CAN2Cluster 
+Welcome to the CAN2Cluster project. It is a CAN-Bus emulator for Controlling Automotive Dashboard Instrument Clusters. Under development is a version for a 2005-2009 Ford Mustang instrument panel. Expansion to other CAN-Bus controlled dashboards should be possible by end-user development of the Arduino firmware.
 
 ![mustangcluster275](https://user-images.githubusercontent.com/10354989/50655679-b7a95a00-0f45-11e9-8c29-e3e9a20487e5.jpg)
 
@@ -9,8 +9,8 @@ Welcome to the Can2Cluster project. It is a CAN-Bus emulator for Controlling Aut
 
 ### Hardware Summary
 * Arduino MEGA2560 R3.
-* MCP2515 CAN-Bus Controller Shield.
-* 1602 LCD / Keypad Shield (optional).
+* MCP2515 CAN-Bus Controller Shield (for HS CAN-Bus).
+* MCP2515/TJA1050 CAN-Bus Module (for MS CAN-Bus).
 
 ### Project Status
 * Dec-27-2018: Ordered CAN-Bus hardware. Should arrive by February 2019.
