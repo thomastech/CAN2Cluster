@@ -27,10 +27,14 @@ Some Application Examples:
 - Automobile / Motorbike Instrument Cluster Tester.
 - Animated dashboard display for education, art, or entertainment.
 
+### Video Demos
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=fxD2akmYyDo
+" target="_blank"><img src="https://user-images.githubusercontent.com/10354989/52005499-b274f780-247e-11e9-9ec1-4138c7d364f1.jpg" 
+alt="IMAGE ALT TEXT HERE" width="300" height="180" border="10" /></a>
+
+
 ### Resources
 Sourceforge Ford CAN-Bus: https://sourceforge.net/p/ecu/wiki/canbus/  
-OpenGarage Mazda CAN-Bus: http://opengarages.org/index.php/Mazda_CAN_ID 
-
 ### Alternate Search Terms:
 CANBus, CANBuss, CAN-Buss, OBD, OBD2, OBDII
 
