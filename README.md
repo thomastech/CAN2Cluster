@@ -29,8 +29,7 @@ The code could be adapted for a variety of applications, For example:
 - Custom Car Dashboard Conversions.
 
 ### Video Demos
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=fxD2akmYyDo
-" target="_blank"><img src="https://user-images.githubusercontent.com/10354989/52005499-b274f780-247e-11e9-9ec1-4138c7d364f1.jpg" 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=fxD2akmYyDo" target="_blank"><img src="https://user-images.githubusercontent.com/10354989/52005499-b274f780-247e-11e9-9ec1-4138c7d364f1.jpg" 
 alt="IMAGE ALT TEXT HERE" width="300" height="180" border="10" /></a>
 
 ### Resources
