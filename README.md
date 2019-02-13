@@ -42,7 +42,12 @@ alt="CAN2Cluster Project Introduction" width="300" height="180" border="10" /></
   
 **Demo (Part 1) Video**  
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=_LOL9bgKsqw" target="_blank"><img src="https://user-images.githubusercontent.com/10354989/52673931-f3d1c200-2ed6-11e9-90a9-8ee6e713147f.jpg" 
-alt="CAN2Cluster Demo Part 1" width="300" height="265" border="10" /></a>
+alt="CAN2Cluster Demo Part 1" width="300" height="265" border="10" /></a>  
+
+**Demo (Part 2) Video**  
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=28geXSEA8To" target="_blank"><img src="https://user-images.githubusercontent.com/10354989/52752353-50041700-2fa7-11e9-8752-6c89d31de9b9.jpg" 
+alt="CAN2Cluster Demo Part 1" width="300" height="229" border="10" /></a>  
+
 
 ### Resources
 Sourceforge Ford CAN-Bus: https://sourceforge.net/p/ecu/wiki/canbus/  
