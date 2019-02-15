@@ -24,7 +24,9 @@ Welcome to the CAN2Cluster project. It is an Arduino based CAN-Bus system for co
 ### Notes & Comments
 CAN2Cluster is a interactive desktop display that is best described as a car lover's art piece. It uses a Ford Mustang instrument cluster that has a two channel CAN-Bus communication port for control. Low cost Arduino hardware with CAN-Bus is used to animate the instrument cluster's gauges and warning lights.  
 
-There's some interesting features too. An MP3 Audio Player is used to create the sounds of a revving V8 motor that is synced to the dashboard's gauges and indicator lights. For realism, an automobile ignition key is used to "start" the engine. There's also a hand-held IR remote that can control a dozen different functions. Plus serial terminal host access allows the user to manually control the gauges and indicators.
+There's some interesting features too. An MP3 Audio Player is used to create the sounds of a revving V8 motor that is synced to the dashboard's gauges and indicator lights.
+
+For realism, an automobile ignition key is used to "start" the engine. There's also a hand-held IR remote that can control a dozen different functions. Plus serial terminal host access allows the user to manually control the gauges and indicators.
 
 The Arduino code could be adapted for a variety of applications. For example:
 - Automobile Instrument Cluster Tester.
@@ -37,7 +39,7 @@ https://www.rc-cam.com/forum/index.php?/topic/4169-ford-mustang-instrument-clust
 
 
 ### Video Demos
-**Intoduction Video**  
+**Introduction Video**  
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=fxD2akmYyDo" target="_blank"><img src="https://user-images.githubusercontent.com/10354989/52005499-b274f780-247e-11e9-9ec1-4138c7d364f1.jpg" 
 alt="CAN2Cluster Project Introduction" width="300" height="180" border="10" /></a>  
   
