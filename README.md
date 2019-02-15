@@ -1,5 +1,5 @@
 # CAN2Cluster 
-Welcome to the CAN2Cluster project. It is a Arduino based CAN-Bus system for controlling Automotive Dashboard Instrument Clusters. Under development is a version that directly interfaces with a 2005-2009 Ford Mustang (six gauge) instrument cluster. Expansion to other CAN-Bus controlled dashboards should be possible by end-user development of the Arduino firmware.
+Welcome to the CAN2Cluster project. It is an Arduino based CAN-Bus system for controlling Automotive Dashboard Instrument Clusters. Under development is a version that directly interfaces with a 2007-2009 Ford Mustang (six gauge) instrument cluster. Expansion to other CAN-Bus controlled dashboards should be possible by end-user development of the Arduino firmware.
 
 ![mustangcluster275](https://user-images.githubusercontent.com/10354989/50655679-b7a95a00-0f45-11e9-8c29-e3e9a20487e5.jpg)
 
@@ -18,14 +18,15 @@ Welcome to the CAN2Cluster project. It is a Arduino based CAN-Bus system for con
 * Jan-08-2019: Received Instrument Cluster. CAN-Bus control working with Analyzer Tool.
 * Jan-21-2019: CAN-Bus Test Software Video Demo now available. See Video Demo section below.
 * Feb-01-2019: Gauge animation functions completed.
-* **Feb-12-2019: Project complete. All Features are Working.**
+* Feb-12-2019: Project complete. All Features are Working.
+* **Feb-18-2019: Estimated date for posting Arduino Software source files.**
 
 ### Notes & Comments
-CAN2Cluster is a interactive desktop display that is best described as a car lover's art piece. It uses a 2009 Ford Mustang instrument cluster that has a two channel CAN-Bus communication port for control. Based on popular Arduino hardware, the CAN-Bus is used to animate the instrument cluster's gauges and warning lights.  
+CAN2Cluster is a interactive desktop display that is best described as a car lover's art piece. It uses a Ford Mustang instrument cluster that has a two channel CAN-Bus communication port for control. Low cost Arduino hardware with CAN-Bus is used to animate the instrument cluster's gauges and warning lights.  
 
-There's some interesting features too. An MP3 Audio Player is used to create the sounds of a rev'ing V8 motor that is synced to the gauges and indicators. For realism, an automobile ignition key is used to "start" the engine. There's also a hand-held IR remote that can control a dozen different functions. Plus serial terminal host access allows the user to manually control the gauges and indicators.
+There's some interesting features too. An MP3 Audio Player is used to create the sounds of a revving V8 motor that is synced to the dashboard's gauges and indicator lights. For realism, an automobile ignition key is used to "start" the engine. There's also a hand-held IR remote that can control a dozen different functions. Plus serial terminal host access allows the user to manually control the gauges and indicators.
 
-The code could be adapted for a variety of applications, For example:
+The Arduino code could be adapted for a variety of applications. For example:
 - Automobile Instrument Cluster Tester.
 - Animated dashboard display for education, art, or entertainment.
 - Dashboard for Race Gaming Cockpit.
