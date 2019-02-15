@@ -6,5 +6,5 @@ His gadgets won't change the world but maybe they'll bring a few smiles.
 If you like this project and would like to buy Thomas a cup of coffee as appreciation for his efforts, then please click the donate link below.  
 [![ko-fi](https://www.ko-fi.com/img/donate_sm.png)](https://ko-fi.com/E1E2NNLE)
 
-May all your LEDs blink brightly and relays click majestically.
+Your generosity is appreciated. May all your LEDs blink brightly and relays click majestically.
 
