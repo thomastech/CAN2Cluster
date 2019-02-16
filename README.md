@@ -4,7 +4,7 @@ Welcome to the CAN2Cluster project. It is an Arduino based CAN-Bus system for co
 ![mustangcluster275](https://user-images.githubusercontent.com/10354989/50655679-b7a95a00-0f45-11e9-8c29-e3e9a20487e5.jpg)
 
 ### The CAN2Cluster Team Contributors
-* Thomas B. (@thomastech, Project Originator)
+* Thomas B. (@thomastech, Project Creator)
 * YOUR Name Here. Contribute to the project and join the cluster hacking team.
 
 ### Hardware Summary
@@ -19,6 +19,8 @@ Welcome to the CAN2Cluster project. It is an Arduino based CAN-Bus system for co
 * Jan-21-2019: CAN-Bus Test Software Video Demo now available. See Video Demo section below.
 * Feb-01-2019: Gauge animation functions completed.
 * Feb-12-2019: Project complete. All Features are Working.
+* Feb-15-2019: Published Parts List.
+* Feb-16-2019: Uploaded Wave Files.
 * **Feb-18-2019: Estimated date for posting Arduino Software source files.**
 
 ### Notes & Comments
