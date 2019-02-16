@@ -10,7 +10,7 @@ The audio feature is optional. The sound module can be omitted which also requir
 Disabling it requires an edit to the Arduino Config.h file (see the file's MP3PLAYER section).
 
 ### Audio Files:
-Unzip these wave files (with directory structure) to your local hard drive: [CAN2ClusterAudio.zip](https://github.com/thomastech/images-in-readme/files/2872208/CAN2ClusterAudio.zip)
+Unzip the `CAN2ClusterAudio.zip` wave files (with directory structure) to your local hard drive.
 
 ### Wave File Installation
 It is important to begin with an empty micro SD card (1GB-32GB) that is FAT32 formatted. Confirm that no files are on the card.  
