@@ -168,10 +168,11 @@ There are several diagnostic commands. As follows:
   Usage MSCAN,[0-1]  
   Example: MSCAN,1  
   Action: Turn on MS CAN-Bus Data Monitor  
-- `RUNAN`= Run Animation (STOP / FIXED / REV / DRV / TEST / USER1 / USER2)  
+- `RUNAN`= Silently Run Animation (STOP / FIXED / REV / DRV / TEST / USER1 / USER2)  
   Usage: RUNAN[0-6]  
   Example: RUNAN,2  
   Action: Run the Engine Rev Animation  
+  Notes: No MP3 audio, runs silently.
 - `RDAT`= Reset CAN-Bus Data to Defaults  
   Usage: RDAT  
   Action: All Gauges and Indicator reset to default state.  
