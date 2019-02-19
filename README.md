@@ -1,5 +1,5 @@
 # CAN2Cluster 
-Welcome to the CAN2Cluster project. It is an Arduino based CAN-Bus system for controlling Automotive Dashboard Instrument Clusters. The developed version directly interfaces with a 2007-2009 Ford Mustang (six gauge) instrument cluster. Adaption to other CAN-Bus controlled dashboards should be possible by end-user development of the Arduino firmware.
+Welcome to the CAN2Cluster project. It is an Arduino based CAN-Bus system for controlling Automotive Dashboard Instrument Clusters. The developed version directly interfaces with a 2007-2009 Ford Mustang (six gauge) instrument cluster. Adaptation to other CAN-Bus controlled dashboards should be possible by end-user development of the Arduino firmware.
 
 ![mustangcluster275](https://user-images.githubusercontent.com/10354989/50655679-b7a95a00-0f45-11e9-8c29-e3e9a20487e5.jpg)
 
@@ -23,7 +23,7 @@ There's some interesting features too. An MP3 Audio Player is used to create the
 
 For realism, an automobile ignition key is used to "start" the engine. There's also a hand-held IR remote that can control a dozen different functions. Plus serial terminal host access allows the user to manually control the gauges and indicators.
 
-The Arduino code could be adapted for a variety of applications. For example:
+The Arduino code could be enhanced to support a variety of applications. For example:
 - Automobile Instrument Cluster Tester.
 - Animated dashboard display for education, art, or entertainment.
 - Dashboard for Race Gaming Cockpit.
