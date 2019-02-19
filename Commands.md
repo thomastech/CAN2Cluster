@@ -30,13 +30,13 @@ The basic communication settings are 115200 baud, 8 bits, 1 stop, no parity, no 
 All commands support a status query function that returns its current parameter value. Example: BF,? returns the Brake Fluid parameter.
 
 ### Command Summary
-- `?`= List all commands (Help Screen)
-- `H`= List all commands (alternate to '?')
+- `?`= List all commands (Help Screen)  
+- `H`= List all commands (alternate to '?')  
 - `BF`= Brake Fluid (Off/On)  
    Usage: BF,[0-1]  
    Example: BF,1  
    Action: Turn Brake Fluid Warning Message On  
-   Status Query: `BF,?` returns the state (hex value)
+   Status Query: `BF,?` returns the state (hex value)  
 - `BL`= Back Light (0-100%)  
    Usage: BL,[0-100]  
    Example: BL,75  
@@ -47,18 +47,18 @@ All commands support a status query function that returns its current parameter 
    Usage: CC,[0-1]  
    Example: CC,1  
    Action: Turn On Cruise Control Indicator  
-   Status Query: `CC,?` returns the state (hex value)
+   Status Query: `CC,?` returns the state (hex value)  
 - `CE`= Check Engine Light (Off / On / Blink)  
    Usage: CE,[0-2]  
    Example: CE,2  
    Action: Blink Check Engine Indicator  
-   Status Query: `CE,?` returns the state (hex value)
+   Status Query: `CE,?` returns the state (hex value)  
 - `CP`=Cluster Power Relay Control (Off / On)  
    Usage: CP,[0-1]  
    Example: CP,1  
    Action: Turn On Cluster Power.  
+   Status Query: `CP,?` returns "Off" / "On"  
    Notes:  Ignition key (Run position) overrides this setting.  
-   Status Query: `CP,?` returns "Off" / "On"
 - `CS`= Charge System Warning (Off / On)  
    Usage: CS,[0-1]  
    Example: CS,1  
@@ -73,8 +73,8 @@ All commands support a status query function that returns its current parameter 
    Usage: DT,[0-3]  
    Example: DT,1  
    Action: Turn On Driver Door Ajar Warning Message  
-   Notes: 0=Clear Door Warning. Driver=1, Passenger=2, Trunk=3 (Or'd together).  
    Status Query: `DT,?` returns the state (hex value)  
+   Notes: 0=Clear Door Warning. Driver=1, Passenger=2, Trunk=3 (Or'd together).  
 - `FT`= Fuel Tank Level (0-100%, Reset)  
    Usage: FT,[0-100,R]  
    Example: FT,75  
@@ -108,18 +108,18 @@ All commands support a status query function that returns its current parameter 
 - `OP`= Oil Pressure (Off / On)  
    Usage: OP,[0-1]  
    Example: OP,1  
-   Action: Turn On Oil Pressure Gauge
+   Action: Turn On Oil Pressure Gauge  
    Status Query: `OP,?` returns the state (hex value)  
    Notes: The Oil Pressure Gauge has only one active position.  
 - `PB`= Parking Brake Indicator (Off / On)  
    Usage: PB,[0-1]  
    Example: PB,1  
-   Action: Turn On Parking (hand) Brake indicator. If Speed is >1 then chime is heard.
+   Action: Turn On Parking (hand) Brake indicator. If Speed is >1 then chime is heard.  
    Status Query: `PB,?` returns the state (hex value)  
 - `PT`= Power-Train Fault (Off / On)  
    Usage: PT,[0-1]  
    Example: PT,1  
-   Action: Turn On Powertrain Fault indicator (wrench icon)
+   Action: Turn On Powertrain Fault indicator (wrench icon)  
    Status Query: `PT,?` returns the state (hex value)  
    Notes: Power reset is required to clear the fault.  
 - `SP`= Speed (0-120mph)  
