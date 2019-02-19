@@ -1,30 +1,28 @@
 # CAN2Cluster Command Line Interface (CLI)
 
 ### Introduction
-The Command Line Interface (CLI) provides serial terminal access to the Instrument Cluster. It allows manual control of the gauges and indicator lights. 
-Serial communication is through the Arduino's built-in USB Com port.
+The Command Line Interface (CLI) provides serial terminal access to the Instrument Cluster. It allows manual control of the gauges 
+and indicator lights. Serial communication is through the Arduino's built-in USB Com port.
 
 The serial port can also be used to monitor the runtime log messages. During operation the log messages are sent in real-time to report actions and status.
 
 ### Communication Requirements
 Many popular serial terminal programs can be used. A convenient choice is the Serial Monitor built into the Arduino IDE (Tools->Serial Monitor).  
 
-The basic communication settings are 115200 baud, 8 bits, 1 stop, no parity, no flow. All commands must be terminated with Newline (ASCII 10). Do **NOT** send CR (ASCII 13).  
+The basic communication settings are 115200 baud, 8 bits, 1 stop, no parity, no flow. All commands must be terminated with CR (ASCII 13). Do **NOT** send Newline (ASCII 10).  
 
 **Serial Terminal Setting Examples:**
 
 **1. Arduino Serial Monitor:**  
-  - [x] Autoscroll On  
-  - [x] Newline  
+  - [x] Autoscroll Enabled  
+  - [x] Carriage return  
   - [x] 115200 baud  
 
 **2. PuTTY:**  
   - [x] 115200 baud, 8 bits, 1 stop  
   - [x] Parity None, Flow Control None  
-  - [x] Implicit LF Off
-  - [x] Implicit CR Off
-  
-*Note: PuTTY does not send Newline. Workaround: Use CTRL-J instead of [Enter] to send commands.*  
+  - [x] Implicit LF Off  
+  - [x] Implicit CR Off  
 
 ### Command Query
 All commands support a status query function that returns its current parameter value. Example: BF,? returns the Brake Fluid parameter.
