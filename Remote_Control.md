@@ -24,8 +24,8 @@ be disabled. Disabling requires an edit to the Arduino Config.h file (see the fi
 - `8`Button = Reset cluster to default gauge & indicator values. Say Welcome Message.  
 - `9`Button = Engine Off.  
 - `0`Button = Toggle Headlights (Daytime/Nighttime lighting).  
-- `*`Button = Change Cluster Nighttime Backlight Intensity (10% each press).  
-- `#`Button = Change Accessory LED Intensity (10% each press).  
+- `*`Button = Change Accessory LED Intensity (10% each press). 
+- `#`Button = Change Cluster Nighttime Backlight Intensity (10% each press).  
 - `OK`Button = Honk Horn.  
 - ▲ Button = Increase Volume (about 3% each press).  
 - ▼ Button = Decrease Volume (about 3% each press).  
