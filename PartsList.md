@@ -36,6 +36,11 @@ eBay: https://goo.gl/TvqrgT
 AliExpress: https://goo.gl/Hgeu83  
 ![mosfet1_300](https://user-images.githubusercontent.com/10354989/52875718-e2bcc700-3109-11e9-8790-87d2333eb7df.jpg)
 
+* **IR Remote Control (Qty 1)**  
+eBay: https://goo.gl/qJMWHw  
+AliExpress: https://goo.gl/JkNyxD  
+![ir_remote1_250](https://user-images.githubusercontent.com/10354989/53042394-0732df00-343b-11e9-92c1-e9f11b5005dd.jpg)
+
 * **DFPlayer Mini SD Card MP3 Player (Qty 1)**  
 eBay: https://goo.gl/hcQCzf  
 AliExpress: https://goo.gl/zCSGiU   
