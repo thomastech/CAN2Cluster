@@ -2,7 +2,7 @@
 // Purpose: Master project repository.
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Feb-20-2019
+// Last Change: Mar-21-2019. Added RunSwitch, AmplifierPwr, ClusterPwr, SetAmplifierPower(), SetClusterPower().
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
    Copyright (C) 2019  T. Black
@@ -71,17 +71,22 @@ void PrintVersion(void);
 void ProcessCommands(void);
 void RemoteControl(void);
 void SendCanBus(void);
+void SetAmplifierPower(bool state);
+void SetClusterPower(bool state);
 void UpdateAmpPwr(void);
 void UpdatePowerState(void);
 
 // ****************************************************************************************************************************
 
 // Global Variables
+extern bool AmplifierPwr;                               // Master Audio Amp Power Relay On/Off state.
 extern bool BlinkFlag;                                  // Blinker On/Off Toggle State Flag.
 extern bool CLI_PwrFlag;                                // CLI Cluster Power State Flag.
+extern bool ClusterPwr;                                 // Master Instrument Cluster Power Relay On/Off state.
 extern bool FuelRstFlag;                                // Fuel Gauge Reset timer.
 extern bool HS_Print_Flag;                              // HS CAN-Bus Data Display Mode.
 extern bool MS_Print_Flag;                              // MS CAN-Bus Data Display Mode.
+extern bool RunSwitch;                                  // Run Switch Status.
 extern bool SeqRunOnce;                                 // Sequencer Run Once Flag.
 extern byte CAN_data[];                                 // CAN-Bus Data Packet.
 extern byte CoolantTemperature;                         // Temperature Gauge.
@@ -153,9 +158,9 @@ extern RBD::SerialManager serial_manager;
 // ****************************************************************************************************************************
 
 // ** SYSTEM CONSTANTS **
-extern const byte PWM_Max;                              // Maximum PWM Value (On).
-extern const byte PWM_Min;                              // Minimum PWM Value (Off).
-extern const unsigned int LedLvlStep;                   // Ambient LED Intensity Level Change, per step. For IR Remote.
+extern const byte PWM_Max;                              // Maximum PWM Value (On). For MOSFET controlled lighting.
+extern const byte PWM_Min;                              // Minimum PWM Value (Off). For MOSFET controlled lighting.
+extern const unsigned int LedLvlStep;                   // Ambient LED Intensity Level Change, per step. For MOSFET PWM lighting.
 extern const unsigned long AMPPWR_TIME;                 // Audio Amplifier Power Time, in mS.
 extern const unsigned long CYCLE_TIME;                  // Main Loop Cycle Time, in uSecs.
 extern const unsigned long BLINKER_TIME;                // Turn Signal Blinker Delay Time, in uSecs.

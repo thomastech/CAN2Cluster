@@ -2,7 +2,7 @@
 // Purpose: IR Remote Control (Optional)
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Feb-20-2019
+// Last Change: Mar-21-2019. Revised RemoteControl().
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
    Copyright (C) 2019  T. Black
@@ -52,12 +52,12 @@ void RemoteControl(void)
             return;                                     // Nothing to do, exit.
         }
         
-        if(digitalRead(IcPwrPin) == ClusterRlyOff){     // Power is off.
+        if(ClusterPwr == ClusterRlyOff){     // Power is off.
             IR_PwrTimer = millis() + IRPWR_TIME;
             AmpPwrTimer = millis() + AMPPWR_TIME;
             serial_manager.println(F("IR Remote: Automatic Power-Up"));
         }
-        else if(digitalRead(RunSwPin) == RunSwOff && CLI_PwrFlag == false) {
+        else if(RunSwitch == RunSwOff && CLI_PwrFlag == false) {
             IR_PwrTimer = millis() + IRPWR_TIME;
             AmpPwrTimer = millis() + AMPPWR_TIME;
             serial_manager.println(F("IR Remote: Refresh Timeout"));

@@ -2,7 +2,8 @@
 // Purpose: Transmit CAN-Bus Data.
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Feb-20-2019
+// Last Change: Mar-21-2019. Revised OdometerPhaseCycler(), SendCanBus().
+
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
    Copyright (C) 2019  T. Black
@@ -69,15 +70,20 @@ void ClusterDefault(bool FuelReset)
 void OdometerPhaseCycler(void)
 {
     float floatVar = 0;                                 // General Purpose float variable.
-    unsigned long PhaseTime = 0;                        // Odometer 3-Phase Cycle Cam Timer.
+    unsigned long PhaseTime = 0;                        // Prime Odometer 3-Phase Cycle Cam Timer.
 
     // Service the odometer's 3-phase cycle timer. Used by Odometer and Average mph (in Message Center).
-    floatVar = (float)(MAXSPEED)/(float)(Speed);        // Calculate phase delay scaling using current speed (MPH).
-    PhaseTime = (unsigned long)(ODOMSCALE * floatVar);
-    if(micros() >= OdoTime) {                           // ~300mS=120mph, ~400ms=90mph, ~500mS=72mph, ~1S=36mph, ~2S=18mph, ~4S=9mph (avg mph message center).
-        OdoTime = micros()  + PhaseTime;                // Reset uS timer.
-        if(Speed > 0) OdomPhase++;                      // We are moving.
-        if(OdomPhase > 2) OdomPhase=0;                  // Three phases completed. Reset odometer phase cycle.
+    if(ClusterPwr == ClusterRlyOff) {                   // Cluster is not powered.
+        OdoTime = micros();                             // Reset uS timer.
+        OdomPhase = 2;                                  // Init Phase.
+    }
+    else if(micros() >= OdoTime) {                      // ~300mS=120mph, ~400ms=90mph, ~500mS=72mph, ~1S=36mph, ~2S=18mph, ~4S=9mph (avg mph message center).
+        if(Speed > 0) {                                 // We are moving & cluster is Powered On.
+            floatVar = (float)(MAXSPEED)/(float)(Speed);// Calculate phase delay scaling using current speed (MPH).
+            PhaseTime = (unsigned long)(ODOMSCALE * floatVar);
+            OdoTime = micros() + PhaseTime;             // Reset uS timer.
+            if(++OdomPhase > 2) OdomPhase = 0;          // End of three phases, wrap-around.
+        }
     }
     
     return;
@@ -180,12 +186,16 @@ void SendCanBus(void)
     static unsigned long FuelResetTime = 0;             // Initialize Fuel Reset Timer.
     static bool LocalFuelRstFlag = false;               // Fuel Reset Flag for local use.
     
-    if(micros() < CycleTime + CYCLE_TIME) {             // Is it CAN-Bus Refresh Cycle Time?
+    if(micros() < CycleTime) {                          // Is it CAN-Bus Refresh Cycle Time?
         return;                                         // No, exit.
     }
-    
-    CycleTime = micros();                               // Reset uS timer.
 
+    CycleTime = micros() + CYCLE_TIME;                  // Reset uS timer.
+    
+    if(ClusterPwr == ClusterRlyOff) {                   // Is cluster's Power Off?
+        return;                                         // Off, Exit.
+    }
+    
 
 // **************************************
 // *       DEBUG CAN-BUS SECTION        *
@@ -336,9 +346,7 @@ void SendCanBus(void)
             LocalFuelRstFlag = false;                   // End Reset.
         }
     }
-    else if(digitalRead(RunSwPin) == RunSwOn || 
-      CLI_PwrFlag == true || 
-      digitalRead(IcPwrPin) == ClusterRlyOn) {          // Instrument Cluster active.
+    else {
         CAN_MS.sendMsgBuf(ARB_FUEL,0,8,CAN_data);       // Send Fuel Data.
     }
    

@@ -1,8 +1,8 @@
-// File: cli.h. Used in Can2Cluster.ino project.
+// File: cli.cpp. Used in Can2Cluster.ino project.
 // Purpose: Command Line Interface (CLI). Provides Serial Terminal Control.
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Feb-20-2019
+// Last Change: Mar-21-2019. Revised ProcessCommands().
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
    Copyright (C) 2019  T. Black
@@ -76,7 +76,7 @@ void ProcessCommands(void)
             serial_manager.println(F(" -----------------------------------------------------------------"));
             serial_manager.println("");       
         }
-        else if(digitalRead(IcPwrPin) == ClusterRlyOff && UserCmd != "CP" &&
+        else if(ClusterPwr == ClusterRlyOff && UserCmd != "CP" &&
           UserCmd != "CBINF" && UserCmd != "HSCAN" && UserCmd != "MSCAN" && 
           UserCmd != "RDAT" && UserCmd != "VERS" ) {
             serial_manager.println(F("COMMAND IGNORED! Please use Ignition Key or CP command and Turn On Power."));
@@ -204,13 +204,13 @@ void ProcessCommands(void)
             StrValue.toUpperCase();
             if(StrValue == "?") {
                 StrValue = F("CLUSTER POWER: ");
-                if(digitalRead(IcPwrPin) == ClusterRlyOn){
+                if(ClusterPwr == ClusterRlyOn){
                     StrValue += F("On ");
                 }
                 else {
                     StrValue += F("Off ");
                 }
-                if(digitalRead(RunSwPin) == RunSwOn){   // Ignition Switch is in the Run or Start Position.
+                if(RunSwitch == RunSwOn){               // Ignition Switch is in the Run or Start Position.
                     StrValue += F("(by Ignition Key)");
                 }
                 serial_manager.println(StrValue);
@@ -228,7 +228,7 @@ void ProcessCommands(void)
                     StrValue = F(" Error, Invalid Parameter");
                 }
                 
-                if(digitalRead(RunSwPin) == RunSwOn){   // Ignition Switch is in the Run or Start Position.
+                if(RunSwitch == RunSwOn) {              // Ignition Switch is in the Run or Start Position.
                     CLI_PwrFlag = false;                // Cancel CLI Power On command.
                     StrValue += F(" Refused (Ignition Key Override)");
                 }

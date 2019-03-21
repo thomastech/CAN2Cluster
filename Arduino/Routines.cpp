@@ -2,7 +2,9 @@
 // Purpose: Misc Sub-Routines.
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Feb-20-2019
+// Last Change: Mar-21-2019. 
+//              Revised EngineStartUp(), UpdatePowerState(). 
+//              Added SetAmplifierPower(), SetClusterPower().
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
    Copyright (C) 2019  T. Black
@@ -37,29 +39,35 @@ const unsigned long START_TIME = 90000UL;               // Ignition Start Time, 
 // Rev and Car Driving animation sequences.
 void EngineStartUp(void)
 {
-    bool SwitchStatus = StartSwOff;                     // Switch Status State.
-    static bool OldSwitchStatus = StartSwOff;           // Saves Previous Switch Status State.
+    bool StartSw = StartSwOff;                          // Switch Status State.
+    static bool OldStartSw = StartSwOff;                // Saves Previous Switch Status State.
+    static unsigned int StartDebnc = 0;                 // Start Switch Debounce.
     static unsigned int StartState = 0;                 // State counter for which Engine Sequence to use.
     static unsigned long StartTimer = millis();
     static unsigned long RunTimer = millis();
 
-    SwitchStatus = digitalRead(StartSwPin);             // Get Ignition Key Start State.
+    StartSw = digitalRead(StartSwPin);                  // Get Ignition Key Start State.
     
     if(RunTimer > millis()) {                           // Debouncing key-Start switch. Do nothing, exit.
         return;
     }
-    else if(SwitchStatus != OldSwitchStatus) {          // Ignition Start Key Switch changed state.
+    else if(StartSw != OldStartSw) {                    // Ignition Start Key Switch changed state.
+        if(StartDebnc < 5) {                            // Check multiple times for transient noise filtering.
+            StartDebnc++;
+            return;                                 
+        }
+        
         RunTimer = millis() + RUN_TIME;
         serial_manager.print(F("Ignition Key Start: "));
         
-        if(SwitchStatus == StartSwOn) {                 // New Ignition Start.
-            OldSwitchStatus = SwitchStatus;
+        if(StartSw == StartSwOn) {                      // New Ignition Start.
+            OldStartSw = StartSw;
             serial_manager.println(F("On"));
 
             if(StartTimer < millis()) {                 // Been awhile since last Start.
                 StartState = 0;                         // Reset State to use first Engine Sequence.
             }
-            else if(SwitchStatus == StartSwOn) {        // New Key Start, play next Engine Sequence.
+            else if(StartSw == StartSwOn) {             // New Key Start, play next Engine Sequence.
                 if(++StartState>1) {
                     StartState = 0;
                 }
@@ -88,11 +96,14 @@ void EngineStartUp(void)
 
         }
         else {
-            OldSwitchStatus = SwitchStatus;
+            OldStartSw = StartSw;
             serial_manager.println(F("Off"));
         }
 
         StartTimer = millis() + START_TIME;
+    } 
+    else {
+        StartDebnc = 0;                                 // Reset Start Switch Debounce counter.
     }
     
     return;
@@ -251,25 +262,66 @@ void Print_MP3_Detail(uint8_t type, int value)
 }
 #endif
 
+
+// ============================================================================================================================
+// SetAmplifierPower(): Set Audio Amp Power Relay On/Off.
+void SetAmplifierPower(bool state)
+{
+    AmplifierPwr = state;
+    digitalWrite(AmpPwrPin,state);                      // Turn Off/On Amplifier Power Relay.
+
+    if(digitalRead(AmpPwrPin) != state) {               // Hardware problem.
+        serial_manager.print(F("Hardware Error: AmpPwrPin Stuck "));
+        if(state == HIGH) {
+            serial_manager.println(F("Low"));
+        }
+        else {
+            serial_manager.println(F("High"));
+        }
+    }
+
+    return;
+}
+
+// ============================================================================================================================
+// SetClusterPower(): Set Cluster Power On/Off.
+void SetClusterPower(bool state)
+{
+    ClusterPwr = state;
+    digitalWrite(IcPwrPin,state);                       // Turn Off/On Instrument Cluster.
+
+    if(digitalRead(IcPwrPin) != state) {                // Hardware problem.
+        serial_manager.print(F("Hardware Error: IcPwrPin Stuck "));
+        if(state == HIGH) {
+            serial_manager.println(F("Low"));
+        }
+        else {
+            serial_manager.println(F("High"));
+        }
+    }
+
+    return;
+}
+
 // ============================================================================================================================
 
 // UpdateAmpPwr(): Check to see if Amplifier Power is required (Controls Amplifier Power Relay On/Off states).
 void UpdateAmpPwr(void)
 {
     if(millis() < AmpPwrTimer) {                        // Automatic Power-on Timer is active.
-        digitalWrite(AmpPwrPin,AmpRlyOn);               // Turn On Audio Amp.
+        SetAmplifierPower(AmpRlyOn);                    // Turn On Amplifier Power.
     }
-    else if(digitalRead(RunSwPin) == RunSwOn) {
+    else if(RunSwitch == RunSwOn) {
         AmpPwrTimer = millis() + AMPPWR_TIME;           // Refresh Audio Amplifier Power Shutoff Timer.
-        digitalWrite(AmpPwrPin,AmpRlyOn);               // Turn On Audio Amp.
+        SetAmplifierPower(AmpRlyOn);                    // Turn On Amplifier Power.
     }
     else if(CLI_PwrFlag == true){                       // CLI Power Mode active.
         AmpPwrTimer = millis() + AMPPWR_TIME;           // Refresh Audio Amplifier Power Shutoff Timer.
-        digitalWrite(AmpPwrPin,AmpRlyOn);               // Turn On Audio Amp.
+        SetAmplifierPower(AmpRlyOn);                    // Turn On Amplifier Power.
     }
     else {
         analogWrite(LightPwrPin,FULLDIM);               // Turn Off Lights in Message Center Sw's and Speakers.
-        digitalWrite(AmpPwrPin,AmpRlyOff);              // Turn Off Audio Amp.
+        SetAmplifierPower(AmpRlyOff);                   // Turn Off Amplifier Power.
     }
 
     return;
@@ -281,12 +333,12 @@ void UpdateAmpPwr(void)
 // states to Control Cluster Power Relay (On/Off).
 void UpdatePowerState(void)
 {    
-    bool SwitchStatus;                                  // Switch Status State.
     static bool OldCLIPwr = CLI_PwrFlag;                // Save current CLI Power state.
     static bool IR_PwrFlag = false;                     // IR Remote's Automatic Power Mode.
     static bool OldIgnSwitch = RunSwOff;                // Save current Switch state.
     static byte OldLedPWM = LED_PWM_Level;              // Save current LED Brightness Level.
     static unsigned int OldBlLvl = BackLightLvl;        // Save current Cluster Backlight Level (night mode).
+    static unsigned int RunDebnc = 0;                   // Run Switch Debouncer.
     static unsigned long SwTmr = millis();              // Routine Timer, in mS.
     
     if(millis() <  SwTmr + 50) {                        // 50mS Updates.
@@ -296,17 +348,27 @@ void UpdatePowerState(void)
     SwTmr = millis();                                   // New Update Timer value.
 
     if(digitalRead(RunSwPin) == RunSwOn) {
-        SwitchStatus = RunSwOn;
+        if(RunDebnc < 5) {                              // Check multiple times for transient noise filtering.
+            RunDebnc++;
+        }
+        else {
+            RunSwitch = RunSwOn;
+        }
     }
     else {
-        SwitchStatus = RunSwOff;
+        if(RunDebnc > 0) {                              // Check multiple times for transient noise filtering.
+            RunDebnc--;
+        }
+        else {
+            RunSwitch = RunSwOff;
+        }
     }
     
-    if(SwitchStatus == RunSwOn){                        // Ignition Switch is On.
+    if(RunSwitch == RunSwOn){                        // Ignition Switch is On.
         IR_PwrTimer = millis();                         // Reset Automatic Power-up Timer.
         IR_PwrFlag = false;                             // Disable Automatic Power-up.
-        if(OldIgnSwitch != SwitchStatus) {              // Switch changed states.
-            OldIgnSwitch = SwitchStatus;
+        if(OldIgnSwitch != RunSwitch) {              // Switch changed states.
+            OldIgnSwitch = RunSwitch;
             CLI_PwrFlag = false;                        // Override CLI Power Control.
             OldCLIPwr = false;
             LED_PWM_Level = OldLedPWM;                  // Restore LED Intensity
@@ -318,7 +380,7 @@ void UpdatePowerState(void)
             LED_PWM_Level = LedLvlStep;                 // Low intensity Message Center & Speaker LEDs.
         }
         analogWrite(LightPwrPin,LED_PWM_Level);         // Update LED Brightness in Message Center Sw's and Speakers.
-        digitalWrite(IcPwrPin,ClusterRlyOn);            // Turn On Instrument Cluster.
+        SetClusterPower(ClusterRlyOn);                    // Turn On Instrument Cluster Power Relay.
     }
     else if(CLI_PwrFlag == true){                       // CLI Power Mode active.
         IR_PwrTimer = millis();                         // Reset Automatic Power-up Timer.
@@ -330,7 +392,7 @@ void UpdatePowerState(void)
             BackLightLvl = OldBlLvl;                    // Restore Cluster Backlighting intensity.
             serial_manager.println(F("Power State: CLI On"));
         }
-        digitalWrite(IcPwrPin,ClusterRlyOn);            // Turn On Instrument Cluster.
+        SetClusterPower(ClusterRlyOn);                    // Turn On Instrument Cluster Power Relay.
     }
     else if(millis() < IR_PwrTimer)  {
         if(IR_PwrFlag == false) {
@@ -340,14 +402,14 @@ void UpdatePowerState(void)
             BackLightLvl = OldBlLvl;                    // Restore Cluster Backlighting intensity.
             serial_manager.println(F("Power State: Remote On"));
         }
-        digitalWrite(IcPwrPin,ClusterRlyOn);            // Turn On Instrument Cluster.
+        SetClusterPower(ClusterRlyOn);                    // Turn On Instrument Cluster Power Relay.
     }
     else {
         IR_PwrTimer = millis();                         // Reset Automatic Power-up Timer.
-        if(OldIgnSwitch != SwitchStatus) {              // Switch changed states, Power Off.
+        if(OldIgnSwitch != RunSwitch) {              // Switch changed states, Power Off.
             Run_Sequencer(SequencerStop,0);             // Kill any running Animations.
             ClusterDefault(false);                      // Reset Gauges and indicators, but leave fuel level as-is.
-            OldIgnSwitch = SwitchStatus;
+            OldIgnSwitch = RunSwitch;
             OldBlLvl = BackLightLvl;
             OldLedPWM = LED_PWM_Level;
             LED_PWM_Level = LedLvlStep/3;               // Reduce Message Center & Speaker LED.
@@ -355,7 +417,7 @@ void UpdatePowerState(void)
             HdLight.ctrl.Headlights = HEADLIGHTS_ON;    // Change cluster backlight to dimmable color.
             BackLightLvl = FULLBRIGHT/2;
             serial_manager.println(F("Power State: Run Switch Off"));
-            digitalWrite(IcPwrPin,ClusterRlyOff);       // Turn Off Instrument Cluster.
+            SetClusterPower(ClusterRlyOff);               // Turn Off Instrument Cluster Power Relay.
             #ifdef MP3PLAYER
              myDFPlayer.stop();                         // Kill MP3 sounds.
             #endif
@@ -368,8 +430,7 @@ void UpdatePowerState(void)
             analogWrite(LightPwrPin,LED_PWM_Level);     // Update LED Brightness in Message Center Sw's and Speakers.
             HdLight.ctrl.Headlights = HEADLIGHTS_ON;    // Change cluster backlight to dimmable color.
             BackLightLvl = FULLBRIGHT/2;
-            serial_manager.println(F("Power State: CLI Off"));
-            digitalWrite(IcPwrPin,ClusterRlyOff);       // Turn Off Instrument Cluster.
+            SetClusterPower(ClusterRlyOff);               // Turn Off Instrument Cluster Power Relay.
         }
         else if(IR_PwrFlag == true) {                   // The Remote's Automatic timer has ended.
             IR_PwrFlag = false;
@@ -383,7 +444,7 @@ void UpdatePowerState(void)
              myDFPlayer.play(MP3_FILE_SHUTDN);          // Announce shutdown, MP3.
             #endif
             serial_manager.println(F("Power State: Automatic Off"));
-            digitalWrite(IcPwrPin,ClusterRlyOff);       // Turn Off Instrument Cluster.
+            SetClusterPower(ClusterRlyOff);               // Turn Off Instrument Cluster Power Relay.
         }
     }
     

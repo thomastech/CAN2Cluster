@@ -3,7 +3,9 @@
 // Compiler: Arduino 1.8.5
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Feb-20-2019
+// Last Change: Mar-21-2019. 
+//              Added AmplifierPwr, ClusterPwr.
+//              Revised Can2Cluster.cpp, Can2Cluster.h, CanBus.cpp, cli.cpp, IR_Control.cpp, Routines.cpp
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
    Copyright (C) 2019  T. Black
@@ -32,8 +34,8 @@
 // ****************************************************************************************************************************
 
 // VERSION CONTROL MESSAGE STRINGS (Update these after any code changes).
-const String VERSION_STR = "V1.0";                      // Version Number.
-const String DATE_STR    = " FEB-20-2019";              // Release Date.
+const String VERSION_STR = "V1.1";                      // Version Number.
+const String DATE_STR    = " MAR-21-2019";              // Release Date.
 const String GITHUB_STR  = "https://goo.gl/mNsPEY";     // Latest Released Code on GitHub Repository.
 const String PROJECT_STR = "https://goo.gl/FrNDj7";     // Project Introduction, rc-cam.com forum Blog
 
@@ -41,12 +43,16 @@ const String PROJECT_STR = "https://goo.gl/FrNDj7";     // Project Introduction,
 
 // GLOBAL SYSTEM VARIABLES
 byte CAN_data[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-byte CoolantTemperature = 0;
+byte CoolantTemperature = COLD_TEMP;                    // Coolant Temperature.
+bool AmplifierPwr = AmpRlyOff;                          // Master Audio Amp Power Relay On/Off state.
 bool BlinkFlag = false;                                 // Turn Signal Blinker On/Off Toggle Flag.
-bool CLI_PwrFlag = false;                               // CLI Cluster Power State Flag.
+bool ClusterPwr  = ClusterRlyOff;                       // Master Instrument Cluster Power Relay On/Off state.
+bool CLI_PwrFlag = ClusterRlyOff;                       // CLI Cluster Power State Flag.
 bool HS_Print_Flag = false;                             // HS CAN-Bus Data Display Mode.
 bool MS_Print_Flag = false;                             // MS CAN-Bus Data Display Mode.
 bool FuelRstFlag = false;                               // Fuel Gauge Reset timer.
+bool RunSwitch = RunSwOff;                              // Run Switch Status.
+bool SeqRunOnce = true;                                 // Sequencer Run Once Flag.
 unsigned int AnimationMode = AnimateStop;               // Animation Mode.
 unsigned int BackLightLvl = (FULLBRIGHT*3)/4;           // Backlight Intensity.
 unsigned int Doors = DOORCLOSE;                         // Doors & Trunk.
@@ -56,7 +62,6 @@ unsigned int OdomPhase = 0;                             // Odometer 3-Phase Cycl
 #ifdef MP3PLAYER
 unsigned int MP3Volume = MP3_DEF_VOL;                   // MP3 Player Volume.
 #endif
-bool SeqRunOnce = true;                                 // Sequencer Run Once Flag.
 unsigned int Speed = 0;                                 // Speedometer.
 unsigned int TachRPM = 0;                               // Tachometer.
 unsigned int Tires = TIRE_OK;                           // TPM (Tire Pressure Monitor).
@@ -117,13 +122,13 @@ RBD::SerialManager serial_manager;                      // Command Line Serial I
 // ****************************************************************************************************************************
 
 // ** SYSTEM CONSTANTS SECTION **
-const byte PWM_Max = 0xff;                              // Maximum PWM Value (Full-On).
-const byte PWM_Min = 0x00;                              // Minimum PWM Value (Off).
-const unsigned int LedLvlStep = 25;                     // Ambient LED Intensity Level Change, per step. For IR Remote.
+const byte PWM_Max = 0xff;                              // Maximum PWM Value for MOSFET controlled Lighting (Full-On).
+const byte PWM_Min = 0x00;                              // Minimum PWM Value for MOSFET controlled Lighting (Off).
+const unsigned int LedLvlStep = 25;                     // Ambient LED Intensity Level Change, per step. For MOSFET PWM lighting.
 const unsigned long AMPPWR_TIME  = IRPWR_TIME +15000UL; // Audio Amplifier Power-On Time, in mS.
+const unsigned long BLINKER_TIME = 500;                 // Blinker Timer Delay, in mS.
 const unsigned long CYCLE_TIME   = 50000UL;             // Main Loop Cycle Time, in uS.
 const unsigned long IRPWR_TIME   = 120000UL;            // IR Remote Auto Power-On Time, in mS.
-const unsigned long BLINKER_TIME = 500;                 // Blinker Timer Delay, in mS.
 const unsigned long FUEL_RST_TIME= 1100;                // Fuel Gauge Reset Timer, in mS.
 
 // ****************************************************************************************************************************
@@ -321,9 +326,9 @@ void setup()
     pinMode(IcPwrPin,OUTPUT);
     analogWrite(LightPwrPin,LED_PWM_Level);             // Set LED Brightness in Message Center Sw's and Speakers.
     digitalWrite(LED_Pin, LOW);
-    digitalWrite(AmpPwrPin,AmpRlyOff);                  // Turn Off Amplifier Power (avoid reset Pop).
-    digitalWrite(IcPwrPin,ClusterRlyOff);               // Turn Off Instrument Cluster.
-
+    
+    SetAmplifierPower(AmpRlyOff);                       // Turn Off Amplifier Power (avoid reset Pop).
+    SetClusterPower(ClusterRlyOff);                     // Turn Off Instrument Cluster Power Relay.
 
     Serial.begin(SERIAL_BAUD,SERIAL_CONFIG);            // USB Serial Baud & Config for serial port.
     PrintVersion();                                     // Print the Project info to the serial port.
@@ -379,7 +384,7 @@ void setup()
      myDFPlayer.EQ(DFPLAYER_EQ_BASS);                   // We want deep bass.
      myDFPlayer.volume(MP3Volume);                      // Set MP3 Volume.
      myDFPlayer.play(MP3_FILE_HELLO);                   // Play the Welcome announcement, MP3.
-     digitalWrite(AmpPwrPin,AmpRlyOn);                  // Turn On Audio Amp.
+     SetAmplifierPower(AmpRlyOn);                       // Turn On Amplifier Power (avoid reset Pop).
     #endif
  
     digitalWrite(LED_Pin, HIGH);                        // LED On.
@@ -387,11 +392,12 @@ void setup()
 
     serial_manager.println(F("Instrument Cluster Ready"));
     
+    AmpPwrTimer = millis() + AMPPWR_TIME;               // Initialize Audio Amplifier Power Shutoff Timer.
     BlinkerTime = millis();                             // Initialize Turn Signal Blinker Timer.
     CycleTime = micros();                               // Initialize CAN-Bus Cycle (refresh) Timer.
-    AmpPwrTimer = millis() + AMPPWR_TIME;               // Initialize Audio Amplifier Power Shutoff Timer.
     IR_PwrTimer = millis();                             // Initialize Cluster Power Shutoff Timer.
     OdoTime = micros();                                 // Initialize Odometer Phase Timer.
+    SeqHoldTimer= millis();                             // Initialize Animation Sequencer Hold Timer.
     
     serial_manager.println(F("End of System Initialization\r\n"));    
     
@@ -407,7 +413,7 @@ void loop()
     
     if(millis() > BlinkerTime + BLINKER_TIME) {         // Turn Signal Blinker Timer.
         BlinkerTime = millis();
-        BlinkFlag = ! BlinkFlag;                        // Toggle Turn Signal Blinker.
+        BlinkFlag = ! BlinkFlag;                        // Toggle Turn Signal Blinker state.
     }
 
     #ifdef IRCONTROL     
@@ -417,13 +423,13 @@ void loop()
     if(HS_Print_Flag) Print_HSCAN_Data();               // Display HS CAN-Bus Data (CLI diagnostic feature).
     if(MS_Print_Flag) Print_MSCAN_Data();               // Display MS CAN-Bus Data (CLI diagnostic feature).
         
-    UpdateAmpPwr();                                     // Update Audio Amplifier Power (On/Off).
+    UpdateAmpPwr();                                     // Update Audio Amplifier Power Relay (On/Off).
     EngineStartUp();                                    // Check for Ignition Key-Start.
-    UpdatePowerState();                                 // Update Cluster Power (Off/Run/Start).
+    UpdatePowerState();                                 // Update Cluster Power Relay (Off/Run/Start).
     ProcessCommands();                                  // Process User Commands (via CLI).   
     OdometerPhaseCycler();                              // Service Odometer 3-Phase state processor.
     SendCanBus();                                       // Periodically Transmit CAN-Bus Data.
-    AnimateSequencer();                                 // Perform Cluster Animations.    
+    AnimateSequencer();                                 // Perform Cluster Animations.
 }
 
 
