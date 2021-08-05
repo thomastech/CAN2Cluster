@@ -25,8 +25,7 @@ The Arduino code could be adapted by the end-user to support a variety of applic
 - Dashboard for Race Gaming Cockpit.
 
 ### Project Blog
-Detailed information can be found in the Mustang Instrument Cluster Project blog:  
-https://www.rc-cam.com/forum/index.php?/topic/4169-ford-mustang-instrument-cluster-project-introduction/
+Build information can be found in the Mustang Instrument Cluster Project blog (pdf file). Please see the Mustang_Cluster_Build_Log.pdf file.
 
 ### Video Demos
 **Introduction Video**  
