@@ -25,7 +25,7 @@ The Arduino code could be adapted by the end-user to support a variety of applic
 - Dashboard for Race Gaming Cockpit.
 
 ### Project Blog
-Build information can be found in the Mustang Instrument Cluster Project blog (pdf file). Please see the Mustang_Cluster_Build_Log.pdf file.
+Build information can be found in the Mustang Instrument Cluster Project blog (pdf file). Please see the [Mustang_Cluster_Build_Log.pdf](https://github.com/thomastech/CAN2Cluster/raw/master/Mustang_Cluster_Build_Log.pdf) file.
 
 ### Video Demos
 **Introduction Video**  
