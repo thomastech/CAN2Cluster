@@ -27,6 +27,9 @@ The Arduino code could be adapted by the end-user to support a variety of applic
 ### Project Blog
 Build information can be found in the Mustang Instrument Cluster Project blog (pdf file). Please see the [Mustang_Cluster_Build_Log.pdf](https://github.com/thomastech/CAN2Cluster/raw/master/Mustang_Cluster_Build_Log.pdf) file.
 
+### 3D Printed Parts
+There are several 3D printed parts used in the display piece. The STL files for these parts are available in the [STL_3D-Print_Files.zip](/STL_3D-Print_Files.zip) package. The file names hint at the part's description. Assembly instructions are not available, so use at your own discretion.
+
 ### Video Demos
 **Introduction Video**  
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=fxD2akmYyDo" target="_blank"><img src="https://user-images.githubusercontent.com/10354989/52005499-b274f780-247e-11e9-9ec1-4138c7d364f1.jpg" 
