@@ -77,11 +77,12 @@ void OdometerPhaseCycler(void)
         OdoTime = micros();                             // Reset uS timer.
         OdomPhase = 2;                                  // Init Phase.
     }
-    else if(micros() >= OdoTime) {                      // ~300mS=120mph, ~400ms=90mph, ~500mS=72mph, ~1S=36mph, ~2S=18mph, ~4S=9mph (avg mph message center).
-        if(Speed > 0) {                                 // We are moving & cluster is Powered On.
-            floatVar = (float)(MAXSPEED)/(float)(Speed);// Calculate phase delay scaling using current speed (MPH).
-            PhaseTime = (unsigned long)(ODOMSCALE * floatVar);
-            OdoTime = micros() + PhaseTime;             // Reset uS timer.
+    else if(Speed > 0) {                                // We are moving & cluster is Powered On.
+        floatVar = (float)(MAXSPEED)/(float)(Speed);    // Calculate phase delay scaling using current speed (MPH).
+        PhaseTime = (unsigned long)(ODOMSCALE * floatVar);
+        unsigned long current_micros = micros();
+        if(current_micros - OdoTime >= PhaseTime) {     // ~300mS=120mph, ~400ms=90mph, ~500mS=72mph, ~1S=36mph, ~2S=18mph, ~4S=9mph (avg mph message center).
+            OdoTime = current_micros;                   // Reset uS timer.
             if(++OdomPhase > 2) OdomPhase = 0;          // End of three phases, wrap-around.
         }
     }
@@ -185,12 +186,13 @@ void SendCanBus(void)
     unsigned int SpeedX;                                // Temp var, holds Speedometer Value.
     static unsigned long FuelResetTime = 0;             // Initialize Fuel Reset Timer.
     static bool LocalFuelRstFlag = false;               // Fuel Reset Flag for local use.
+    unsigned long current_micros = micros();
     
-    if(micros() < CycleTime) {                          // Is it CAN-Bus Refresh Cycle Time?
+    if(current_micros - CycleTime < CYCLE_TIME) {       // Is it CAN-Bus Refresh Cycle Time?
         return;                                         // No, exit.
     }
 
-    CycleTime = micros() + CYCLE_TIME;                  // Reset uS timer.
+    CycleTime = current_micros;                         // Reset uS timer.
     
     if(ClusterPwr == ClusterRlyOff) {                   // Is cluster's Power Off?
         return;                                         // Off, Exit.
@@ -342,7 +344,7 @@ void SendCanBus(void)
         FuelResetTime = millis();
     }
     else if(LocalFuelRstFlag) {                         // Fuel Reset active.
-        if(millis() > FuelResetTime + FUEL_RST_TIME) {  // End of Reset.
+        if(millis()-FuelResetTime >= FUEL_RST_TIME) {   // End of Reset.
             LocalFuelRstFlag = false;                   // End Reset.
         }
     }

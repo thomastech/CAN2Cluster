@@ -2,10 +2,13 @@
 // Purpose: IR Remote Control (Optional)
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Mar-21-2019. Revised RemoteControl().
+// Change Log: Jun-04-2025
+//             Revised millis(), prevent 49 day rollover
+//             Mar-21-2019
+//             Revised RemoteControl().
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
-   Copyright (C) 2019  T. Black
+   Copyright (C) 2019-2025  T. Black
    This file is part of Can2Cluster_Ford.ino (hereby referred to as Can2Cluster).
    
    Can2Cluster is free software: you can redistribute it and/or modify
@@ -51,15 +54,16 @@ void RemoteControl(void)
         if(KeyCode == RC_REP) {                         // Ignore the REPEAT key code.
             return;                                     // Nothing to do, exit.
         }
-        
+
+        unsigned long current_millis = millis();
         if(ClusterPwr == ClusterRlyOff){     // Power is off.
-            IR_PwrTimer = millis() + IRPWR_TIME;
-            AmpPwrTimer = millis() + AMPPWR_TIME;
+            IR_PwrTimer = current_millis;
+            AmpPwrTimer = current_millis;
             serial_manager.println(F("IR Remote: Automatic Power-Up"));
         }
         else if(RunSwitch == RunSwOff && CLI_PwrFlag == false) {
-            IR_PwrTimer = millis() + IRPWR_TIME;
-            AmpPwrTimer = millis() + AMPPWR_TIME;
+            IR_PwrTimer = current_millis;
+            AmpPwrTimer = current_millis;
             serial_manager.println(F("IR Remote: Refresh Timeout"));
         }
             
@@ -133,7 +137,8 @@ void RemoteControl(void)
                 #ifdef MP3PLAYER
                  serial_manager.print(F("Busy, Cannot Play Welcome Message"));
                  myDFPlayer.advertise(MP3_FILE_AD_HIBEEP);// Barge-in with Beep Sound, MP3.
-                 SeqHoldTimer= millis()+MP3_PAUSE_HIBEEP; // Pause the Sequencer while Beep plays.
+                 SeqHoldTimer= millis();
+                 SeqHoldDelay= MP3_PAUSE_HIBEEP;        // Pause the Sequencer while Beep plays.
                 #else
                  serial_manager.print(F("Invalid Request, MP3 Player not installed"));
                 #endif
@@ -166,7 +171,8 @@ void RemoteControl(void)
                 #ifdef MP3PLAYER
                  if(digitalRead(MP3BusyPin)==MP3BusyOn) {
                     myDFPlayer.advertise(MP3_FILE_AD_BLOOP);// Barge in with Bloop Sound, MP3.
-                    SeqHoldTimer = millis()+MP3_PAUSE_BLOOP;// Pause the Sequencer while Bloop plays.
+                    SeqHoldTimer = millis();            
+                    SeqHoldDelay = MP3_PAUSE_BLOOP;     // Pause the Sequencer while Bloop plays.
                  }
                  else {
                     myDFPlayer.play(MP3_FILE_NIGHTON);  // Play Announcement, MP3.
@@ -179,7 +185,8 @@ void RemoteControl(void)
                 #ifdef MP3PLAYER
                  if(digitalRead(MP3BusyPin)==MP3BusyOn) {
                     myDFPlayer.advertise(MP3_FILE_AD_BLOOP);// Barge in with Bloop Sound, MP3.
-                    SeqHoldTimer = millis()+MP3_PAUSE_BLOOP;// Pause the Sequencer while Bloop plays.
+                    SeqHoldTimer = millis();
+                    SeqHoldDelay = MP3_PAUSE_BLOOP;         // Pause the Sequencer while Bloop plays.
                  }
                  else {
                     myDFPlayer.play(MP3_FILE_DAYON);    // Play Announcement, MP3.
@@ -194,7 +201,8 @@ void RemoteControl(void)
              myDFPlayer.volume(MP3Volume);              // Command MP3 Player Volume.
              if(digitalRead(MP3BusyPin)==MP3BusyOn) {
                 myDFPlayer.advertise(MP3_FILE_AD_HIBEEP);// Barge in with Chirp Sound, MP3.
-                SeqHoldTimer= millis()+MP3_PAUSE_HIBEEP; // Pause the Sequencer while Beep plays.
+                SeqHoldTimer = millis();
+                SeqHoldDelay = MP3_PAUSE_HIBEEP;        // Pause the Sequencer while Beep plays.
              }
              else {
                 myDFPlayer.play(MP3_FILE_HIBEEP);       // Play Beep Sound, MP3.
@@ -211,7 +219,8 @@ void RemoteControl(void)
              myDFPlayer.volume(MP3Volume);              // Command MP3 Player Volume.
              if(digitalRead(MP3BusyPin)==MP3BusyOn) {
                 myDFPlayer.advertise(MP3_FILE_AD_LOBEEP); // Barge in with Beep Sound, MP3.
-                SeqHoldTimer = millis()+MP3_PAUSE_LOBEEP; // Pause the Sequencer while Beep plays.
+                SeqHoldTimer = millis();
+                SeqHoldDelay = MP3_PAUSE_LOBEEP;        // Pause the Sequencer while Beep plays.
              }
              else {
                 myDFPlayer.play(MP3_FILE_LOBEEP);       // Play Beep Sound, MP3.
@@ -227,7 +236,8 @@ void RemoteControl(void)
                 serial_manager.print(F("Honk Horn"));
              if(digitalRead(MP3BusyPin)==MP3BusyOn) {
                 myDFPlayer.advertise(MP3_FILE_AD_HORN); // Barge in with Horn Sound, MP3.
-                SeqHoldTimer = millis() + MP3_PAUSE_HORN; // Pause the Sequencer while Horn plays.
+                SeqHoldTimer = millis();
+                SeqHoldDelay = MP3_PAUSE_HORN;          // Pause the Sequencer while Horn plays.
              }
              else {
                 myDFPlayer.play(MP3_FILE_HORN);         // Play Horn Sound, MP3.
@@ -262,7 +272,8 @@ void RemoteControl(void)
             #ifdef MP3PLAYER 
              if(digitalRead(MP3BusyPin)==MP3BusyOn) {
                 myDFPlayer.advertise(MP3_FILE_AD_BLOOP); // Barge in with Bloop Sound, MP3.
-                SeqHoldTimer = millis()+MP3_PAUSE_BLOOP; // Pause the Sequencer while Bloop plays.
+                SeqHoldTimer = millis();
+                SeqHoldDelay = MP3_PAUSE_BLOOP;         // Pause the Sequencer while Bloop plays.
              }
              else {
                 myDFPlayer.play(MP3_FILE_BLOOP);        // Play Bloop Beep Sound, MP3.
@@ -280,7 +291,8 @@ void RemoteControl(void)
             #ifdef MP3PLAYER
              if(digitalRead(MP3BusyPin)==MP3BusyOn) {
                 myDFPlayer.advertise(MP3_FILE_AD_BLOOP);// Barge in with Bloop Sound, MP3.
-                SeqHoldTimer = millis()+MP3_PAUSE_BLOOP;// Pause the Sequencer while Bloop plays.
+                SeqHoldTimer = millis();
+                SeqHoldDelay = MP3_PAUSE_BLOOP;         // Pause the Sequencer while Bloop plays.
              }
              else if(HdLight.ctrl.Headlights == HEADLIGHTS_OFF) {
                 myDFPlayer.play(MP3_FILE_TURNON2);      // Play "Turn On Night Lights" Announcement, MP3.

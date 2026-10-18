@@ -5,7 +5,7 @@
 // Last Change: Mar-21-2019. Added RunSwitch, AmplifierPwr, ClusterPwr, SetAmplifierPower(), SetClusterPower().
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
-   Copyright (C) 2019  T. Black
+   Copyright (C) 2019-2025  T. Black
    This file is part of Can2Cluster_Ford.ino (hereby referred to as Can2Cluster).
    
    Can2Cluster is free software: you can redistribute it and/or modify
@@ -107,6 +107,7 @@ extern unsigned long AmpPwrTimer;                       // Timer for Amplifier P
 extern unsigned long IR_PwrTimer;                       // Timer for IR Remote activated Cluster Power-On Time.
 extern unsigned long OdoTime;                           // Odometer Phase Timer.
 extern unsigned long SeqHoldTimer;                      // Timer for Pausing Animation Sequencer.
+extern unsigned long SeqHoldDelay;                      // Animation Sequence Pause Time.
 extern String UserCmd;                                  // Serial Manager (CLI) User command parameter.
 
 // ****************************************************************************************************************************
@@ -132,6 +133,7 @@ extern const unsigned int StartSwPin;                   // Starter Switch, activ
 extern const unsigned int SwitchOff;                    // Switch State for Ignition Switch Off.
 extern const unsigned int SwitchRun;                    // Switch State for Run Switch On.
 extern const unsigned int SwitchStart;                  // Switch State for Start Switch On.
+
 
 // ****************************************************************************************************************************
 

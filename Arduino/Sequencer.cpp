@@ -2,10 +2,13 @@
 // Purpose: Animation Sequencer functions.
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Feb-20-2019
+// Change Log: Jun-04-2025
+//             Revised millis(), prevent 49 day rollover
+//             Feb-20-2019
+//             Minor revision.
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
-   Copyright (C) 2019  T. Black
+   Copyright (C) 2019-2025  T. Black
    This file is part of Can2Cluster_Ford.ino (hereby referred to as Can2Cluster).
    
    Can2Cluster is free software: you can redistribute it and/or modify
@@ -73,49 +76,50 @@ bool Run_Sequencer(const byte map[][SEQ_DATA_CNT], unsigned int StepCnt){
     bool ExitFlag = false;                              // Initialize Exit Flag.
     static unsigned int SequenceStep = 0;               // Animation Sequence Step Count.
     static unsigned long StepRateTmr = millis();
+    unsigned long current_millis = millis();
     
     if(StepCnt == 0) {                                  // Reset.
         SequenceStep = 0;
         SeqRunOnce = false;
-        StepRateTmr = millis();                         // Refresh local timer.    
+        StepRateTmr = current_millis;                   // Refresh local timer.    
         return(ExitFlag);
     }
     else if(SequenceStep == StepCnt+1 && SeqRunOnce) {  // Animated Sequence Complete, starter Key still active.
         SequenceStep = 0;
-        StepRateTmr = millis();                         // Refresh local timer.
+        StepRateTmr = current_millis;                   // Refresh local timer.
         serial_manager.println(F("Release Starter Key!"));
         return(ExitFlag);
     }
     else if(SequenceStep >= StepCnt && SeqRunOnce) {    // Animated Sequence Complete, no more data.
         SeqRunOnce = false;                             // Clear Run-Once Flag, no more data to read.
         SequenceStep = StepCnt+1;                       // Trick to detect stuck starter key.
-        StepRateTmr = millis();                         // Refresh local timer.
+        StepRateTmr = current_millis;                   // Refresh local timer.
         serial_manager.println(F("Animation Sequence Ended"));
         return(ExitFlag);
     }
-    else if(millis() < SeqHoldTimer) {                  // Sequencer hold period.
-        StepRateTmr = millis();                         // Refresh local timer.
+    else if(current_millis-SeqHoldTimer < SeqHoldDelay) { // Sequencer hold period.
+        StepRateTmr = current_millis;                   // Refresh local timer.
     }
-    else if(millis() > StepRateTmr + (SEQUENCE_DLY*4)){ // We've been idle for awhile.
-        StepRateTmr = millis();                         // Refresh local timer.
+    else if(current_millis-StepRateTmr >= (SEQUENCE_DLY*4)){ // We've been idle for awhile.
+        StepRateTmr = current_millis;                   // Refresh local timer.
         SequenceStep = 0;                               // Reset Sequence Step Count, start map data at beginning.
     }
     else if(!SeqRunOnce) {                              // Nothing to do, exit.
         return(ExitFlag);
     }
 
-    if(millis() > (StepRateTmr + SEQUENCE_DLY)) {       // Time for Another Sequence Step, update CAN-Bus data.  
+    if(current_millis-StepRateTmr >= SEQUENCE_DLY) {    // Time for Another Sequence Step, update CAN-Bus data.  
         if(SequenceStep == 0) {
             serial_manager.println(F("Animation Sequence Started"));
         }
-        StepRateTmr = millis();        
+        StepRateTmr = current_millis;   
         Speed = pgm_read_byte(&(map[SequenceStep][0]));
         TachRPM = pgm_read_byte(&(map[SequenceStep][1])) * 100; // Stored RPM Value is RPM/100.
         CoolantTemperature = pgm_read_byte(&(map[SequenceStep][2]));
         OilP.ctrl.OilPress = (bool)(pgm_read_byte(&(map[SequenceStep][3])));
         Charge_PwrTrain.ctrl.Charge = (bool)(pgm_read_byte(&(map[SequenceStep][4])));
         Pk_Brake.ctrl.ParkBrake = (bool)(pgm_read_byte(&(map[SequenceStep][5])));
-        if(millis() > SeqHoldTimer) {                     // Not a Sequencer hold period.
+        if(current_millis-SeqHoldTimer >= SeqHoldDelay) {  // Not a Sequencer hold period.
             SequenceStep++;
         }
         ExitFlag = true;

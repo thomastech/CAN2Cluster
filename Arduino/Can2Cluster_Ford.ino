@@ -3,12 +3,23 @@
 // Compiler: Arduino 1.8.5
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Mar-21-2019. 
-//              Added AmplifierPwr, ClusterPwr.
-//              Revised Can2Cluster.cpp, Can2Cluster.h, CanBus.cpp, cli.cpp, IR_Control.cpp, Routines.cpp
+// Change Log: V1.4, Oct-17-2026
+//             Revised Routines.cpp, EngineStartUp(), prevent double start-key detect (ongoing problem finally solved).
+//             Revised CanBus.cpp, CAN-Bus micros() and Odometer phase micros(), rollover-safe scheduling.
+//             Revised Sequencer.cpp, Run_Sequencer(), changed hold-period expiration comparison from > to >= for edge case protection.
+//             V1.3, Jun-04-2025 thru Oct-28-2025
+//             Revised RunTimer debounce, prevent double start-key detect.
+//             Additional updates to millis(), fixed 49 day rollover. Fix verified on Jul-27-2025 (53 day test).
+//             V1.2, Apr-08-2025
+//             Updated millis() usage, attempting to prevent 49 day timer issue (key start not working);
+//             V1.1, Feb-21-2020, Apr-11-2020
+//             Revised EngineStartUp(), intermittent key start (ESD issue?).
+//             V1.0, Mar-21-2019. 
+//             Added AmplifierPwr, ClusterPwr.
+//             Revised Can2Cluster.cpp, Can2Cluster.h, CanBus.cpp, cli.cpp, IR_Control.cpp, Routines.cpp
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
-   Copyright (C) 2019  T. Black
+   Copyright (C) 2019-2025  T. Black
    This file is part of Can2Cluster_Ford.ino (hereby referred to as Can2Cluster).
    
    Can2Cluster is free software: you can redistribute it and/or modify
@@ -34,8 +45,8 @@
 // ****************************************************************************************************************************
 
 // VERSION CONTROL MESSAGE STRINGS (Update these after any code changes).
-const String VERSION_STR = "V1.1";                      // Version Number.
-const String DATE_STR    = " MAR-21-2019";              // Release Date.
+const String VERSION_STR = "V1.4";                      // Version Number.
+const String DATE_STR    = " Oct-17-2026";              // Release Date.
 const String GITHUB_STR  = "https://goo.gl/mNsPEY";     // Latest Released Code on GitHub Repository.
 const String PROJECT_STR = "https://goo.gl/FrNDj7";     // Project Introduction, rc-cam.com forum Blog
 
@@ -66,11 +77,12 @@ unsigned int Speed = 0;                                 // Speedometer.
 unsigned int TachRPM = 0;                               // Tachometer.
 unsigned int Tires = TIRE_OK;                           // TPM (Tire Pressure Monitor).
 unsigned long AmpPwrTimer = 0;                          // Timer for IR Remote activated Cluster Power-On Time.
-unsigned long BlinkerTime = 0;                          // Timer for Turn Signal Blinker.
+unsigned long BlinkerTimer= 0;                          // Timer for Turn Signal Blinker.
 unsigned long CycleTime = 0;                            // Timer for CAN-Bus refresh.
 unsigned long IR_PwrTimer= 0;                           // Timer for IR Remote's Automatic Power-On Time.
 unsigned long OdoTime = 0;                              // Timer for Odometer.
 unsigned long SeqHoldTimer = 0;                         // Timer for Pausing Animation Sequencer.
+unsigned long SeqHoldDelay = 0;                         // Delay Time (mS) for Pausing Animation Sequencer.
 String UserCmd;                                         // Serial Port Commands from user (CLI).
 
 // ****************************************************************************************************************************
@@ -308,15 +320,11 @@ void setup()
     static unsigned int RetryCnt = 0;
     
     UserCmd.reserve(32);                                // Reserve string space, minimize memory re-allocations.
-    AnimationMode = AnimateFixed;                       // Set Cluster to Pre-Set Fixed Speed and RPM, without animation.
+    AnimationMode = AnimateStop;                        // Set Cluster to Pre-Set Fixed Speed and RPM, without animation.
     FuelRstFlag = false;
     CLI_PwrFlag = false;                                // CLI Cluster Power State Off.
     LED_PWM_Level = PWM_Max/4;                          // Message Center & Speaker LED, Low Brightness Level.
     ClusterDefault(true);                               // Init Cluster Gauges and indicators with default idle state CAN-Bus data.
-
-    #ifdef MP3PLAYER
-     unsigned int MP3Volume = MP3_DEF_VOL;              // MP3 Player Volume. 
-    #endif
 
     pinMode(StartSwPin,INPUT_PULLUP);
     pinMode(RunSwPin,INPUT_PULLUP);
@@ -392,10 +400,10 @@ void setup()
 
     serial_manager.println(F("Instrument Cluster Ready"));
     
-    AmpPwrTimer = millis() + AMPPWR_TIME;               // Initialize Audio Amplifier Power Shutoff Timer.
-    BlinkerTime = millis();                             // Initialize Turn Signal Blinker Timer.
+    AmpPwrTimer = millis();                             // Initialize Audio Amplifier Power Shutoff Timer.
+    BlinkerTimer = millis();                            // Initialize Turn Signal Blinker Timer.
     CycleTime = micros();                               // Initialize CAN-Bus Cycle (refresh) Timer.
-    IR_PwrTimer = millis();                             // Initialize Cluster Power Shutoff Timer.
+    IR_PwrTimer = 0;                                    // Initialize Cluster Power Shutoff Timer.
     OdoTime = micros();                                 // Initialize Odometer Phase Timer.
     SeqHoldTimer= millis();                             // Initialize Animation Sequencer Hold Timer.
     
@@ -410,9 +418,10 @@ void setup()
 
 void loop()
 {
+    unsigned long current_millis = millis();
     
-    if(millis() > BlinkerTime + BLINKER_TIME) {         // Turn Signal Blinker Timer.
-        BlinkerTime = millis();
+    if(current_millis-BlinkerTimer >= BLINKER_TIME) {    // Turn Signal Blinker Timer.
+        BlinkerTimer = current_millis;
         BlinkFlag = ! BlinkFlag;                        // Toggle Turn Signal Blinker state.
     }
 

@@ -2,12 +2,18 @@
 // Purpose: Misc Sub-Routines.
 // Author: T. Black
 // Created: Jan-07-2019
-// Last Change: Mar-21-2019. 
-//              Revised EngineStartUp(), UpdatePowerState(). 
-//              Added SetAmplifierPower(), SetClusterPower().
+// Change Log: Oct-28-2025
+//             Revised RunTimer debounce, prevent double start key detect.
+//             Jun-04-2025
+//             Revised millis(), prevent 49 day rollover.
+//             Feb-21-2020, Apr-11-2020
+//             Revised EngineStartUp(), intermittent key start fix attempt.
+//             Mar-21-2019
+//             Revised EngineStartUp(), UpdatePowerState(). 
+//             Added SetAmplifierPower(), SetClusterPower().
 /*
    GNU GENERAL PUBLIC LICENSE VERSION 3
-   Copyright (C) 2019  T. Black
+   Copyright (C) 2019-2020  T. Black
    This file is part of Can2Cluster_Ford.ino (hereby referred to as Can2Cluster).
    
    Can2Cluster is free software: you can redistribute it and/or modify
@@ -29,8 +35,9 @@
 
 #include "Can2Cluster_Ford.h"
 
-const unsigned long RUN_TIME = 500UL;                   // Ignition Run Time, in mS. Used to heavily debounce the start switch.
-const unsigned long START_TIME = 90000UL;               // Ignition Start Time, in mS. Start Sw idle lapse time.
+const unsigned long RUN_TIME = 1500UL;           // Ignition Run Time, in mS. Used to heavily debounce the start switch.
+const unsigned long START_TIME = 90000UL;        // Ignition Start Time, in mS. Start Sw idle lapse time, 90 secs.
+const unsigned long START_DEBOUNCE_TIME = 50UL;  // Start switch debounce, milliseconds.
 
 // ============================================================================================================================
 // EngineStartUp(): Start the engine when the Ignition switch is in the START position.
@@ -39,76 +46,83 @@ const unsigned long START_TIME = 90000UL;               // Ignition Start Time, 
 // Rev and Car Driving animation sequences.
 void EngineStartUp(void)
 {
-    bool StartSw = StartSwOff;                          // Switch Status State.
-    static bool OldStartSw = StartSwOff;                // Saves Previous Switch Status State.
-    static unsigned int StartDebnc = 0;                 // Start Switch Debounce.
-    static unsigned int StartState = 0;                 // State counter for which Engine Sequence to use.
-    static unsigned long StartTimer = millis();
-    static unsigned long RunTimer = millis();
+    static bool RawStartSw = StartSwOff;
+    static bool OldStartSw = StartSwOff;
+    static unsigned long DebounceTimer = 0;
+    static unsigned long StartTimer = 0;
+    static bool StartedBefore = false;
+    static unsigned int StartState = 0;
 
-    StartSw = digitalRead(StartSwPin);                  // Get Ignition Key Start State.
-    
-    if(RunTimer > millis()) {                           // Debouncing key-Start switch. Do nothing, exit.
+    const unsigned long Now = millis();
+
+    pinMode(StartSwPin, INPUT_PULLUP);
+    const bool StartSw = digitalRead(StartSwPin);
+
+    // Restart debounce timing whenever the raw input changes.
+    if(StartSw != RawStartSw) {
+        RawStartSw = StartSw;
+        DebounceTimer = Now;
+    }
+
+    // Wait until the input has remained stable.
+    if(Now - DebounceTimer < START_DEBOUNCE_TIME) {
         return;
     }
-    else if(StartSw != OldStartSw) {                    // Ignition Start Key Switch changed state.
-        if(StartDebnc < 5) {                            // Check multiple times for transient noise filtering.
-            StartDebnc++;
-            return;                                 
-        }
-        
-        RunTimer = millis() + RUN_TIME;
-        serial_manager.print(F("Ignition Key Start: "));
-        
-        if(StartSw == StartSwOn) {                      // New Ignition Start.
-            OldStartSw = StartSw;
-            serial_manager.println(F("On"));
 
-            if(StartTimer < millis()) {                 // Been awhile since last Start.
-                StartState = 0;                         // Reset State to use first Engine Sequence.
-            }
-            else if(StartSw == StartSwOn) {             // New Key Start, play next Engine Sequence.
-                if(++StartState>1) {
-                    StartState = 0;
-                }
-            }
-//          serial_manager.print(F("Ignition Start State: "));
-//          serial_manager.println(String(StartState));
-            
-            Run_Sequencer(SequencerStop,0);             // Kill any running Animations.
-            
-            if(StartState == 0) {
-                AnimationMode = AnimateRev1;
-                SeqRunOnce = true;                      // Tell Sequencer to Run Once.
-                serial_manager.println(F("Play Engine Rev #1"));
-                #ifdef MP3PLAYER
-                 myDFPlayer.play(MP3_FILE_REV1);        // Play the Engine REV #1 sound, MP3.
-                #endif
-            }
-            else {
-                AnimationMode = AnimateDrive;
-                SeqRunOnce = true;                      // Tell Sequencer to Run Once.
-                serial_manager.println(F("Play Car Drive"));
-                #ifdef MP3PLAYER
-                 myDFPlayer.play(MP3_FILE_DRIVE);       // Play the CAR DRIVE sounds, MP3.
-                #endif
-            }
-
-        }
-        else {
-            OldStartSw = StartSw;
-            serial_manager.println(F("Off"));
-        }
-
-        StartTimer = millis() + START_TIME;
-    } 
-    else {
-        StartDebnc = 0;                                 // Reset Start Switch Debounce counter.
+    // No change in the confirmed switch state.
+    if(RawStartSw == OldStartSw) {
+        return;
     }
-    
-    return;
-}
 
+    // Accept the debounced switch transition.
+    OldStartSw = RawStartSw;
+
+    serial_manager.print(F("Ignition Key Start: "));
+
+    if(OldStartSw == StartSwOff) {
+        serial_manager.println(F("Off"));
+        return;
+    }
+
+    // A new, confirmed ignition START event.
+    serial_manager.println(F("On"));
+
+    // First start or long interval: always select Engine Rev.
+    if(!StartedBefore || Now - StartTimer > START_TIME) {
+        StartState = 0;
+    }
+    else {
+        // Recent start: alternate between Rev and Drive.
+        StartState = (StartState == 0) ? 1 : 0;
+    }
+
+    StartTimer = Now;
+    StartedBefore = true;
+
+    // Stop any existing animation before starting the next one.
+    Run_Sequencer(SequencerStop, 0);
+
+    SeqRunOnce = true;
+
+    if(StartState == 0) {
+        AnimationMode = AnimateRev1;
+
+        serial_manager.println(F("Play Engine Rev #1"));
+
+        #ifdef MP3PLAYER
+        myDFPlayer.play(MP3_FILE_REV1);
+        #endif
+    }
+    else {
+        AnimationMode = AnimateDrive;
+
+        serial_manager.println(F("Play Car Drive"));
+
+        #ifdef MP3PLAYER
+        myDFPlayer.play(MP3_FILE_DRIVE);
+        #endif
+    }
+}
 // ============================================================================================================================
 
 // isNumeric(): Return true if the string is all numeric.
@@ -308,15 +322,17 @@ void SetClusterPower(bool state)
 // UpdateAmpPwr(): Check to see if Amplifier Power is required (Controls Amplifier Power Relay On/Off states).
 void UpdateAmpPwr(void)
 {
-    if(millis() < AmpPwrTimer) {                        // Automatic Power-on Timer is active.
+    unsigned long current_millis = millis();
+    
+    if(AmpPwrTimer !=0 && current_millis-AmpPwrTimer < AMPPWR_TIME) {      // Automatic Power-on Timer is active.
         SetAmplifierPower(AmpRlyOn);                    // Turn On Amplifier Power.
     }
     else if(RunSwitch == RunSwOn) {
-        AmpPwrTimer = millis() + AMPPWR_TIME;           // Refresh Audio Amplifier Power Shutoff Timer.
+        AmpPwrTimer = current_millis;                   // Refresh Audio Amplifier Power Shutoff Timer.
         SetAmplifierPower(AmpRlyOn);                    // Turn On Amplifier Power.
     }
     else if(CLI_PwrFlag == true){                       // CLI Power Mode active.
-        AmpPwrTimer = millis() + AMPPWR_TIME;           // Refresh Audio Amplifier Power Shutoff Timer.
+        AmpPwrTimer = current_millis;                   // Refresh Audio Amplifier Power Shutoff Timer.
         SetAmplifierPower(AmpRlyOn);                    // Turn On Amplifier Power.
     }
     else {
@@ -340,13 +356,14 @@ void UpdatePowerState(void)
     static unsigned int OldBlLvl = BackLightLvl;        // Save current Cluster Backlight Level (night mode).
     static unsigned int RunDebnc = 0;                   // Run Switch Debouncer.
     static unsigned long SwTmr = millis();              // Routine Timer, in mS.
-    
-    if(millis() <  SwTmr + 50) {                        // 50mS Updates.
+    unsigned long current_millis = millis();
+
+    if(current_millis-SwTmr < 50) {                     // 50mS Updates.
         return;
     }
     
-    SwTmr = millis();                                   // New Update Timer value.
-
+    SwTmr = current_millis;                             // New Update Timer value.
+    
     if(digitalRead(RunSwPin) == RunSwOn) {
         if(RunDebnc < 5) {                              // Check multiple times for transient noise filtering.
             RunDebnc++;
@@ -364,10 +381,10 @@ void UpdatePowerState(void)
         }
     }
     
-    if(RunSwitch == RunSwOn){                        // Ignition Switch is On.
-        IR_PwrTimer = millis();                         // Reset Automatic Power-up Timer.
+    if(RunSwitch == RunSwOn){                           // Ignition Switch is On.
+        IR_PwrTimer = 0;                                // Reset Automatic Power-up Timer.
         IR_PwrFlag = false;                             // Disable Automatic Power-up.
-        if(OldIgnSwitch != RunSwitch) {              // Switch changed states.
+        if(OldIgnSwitch != RunSwitch) {                 // Switch changed states.
             OldIgnSwitch = RunSwitch;
             CLI_PwrFlag = false;                        // Override CLI Power Control.
             OldCLIPwr = false;
@@ -380,10 +397,10 @@ void UpdatePowerState(void)
             LED_PWM_Level = LedLvlStep;                 // Low intensity Message Center & Speaker LEDs.
         }
         analogWrite(LightPwrPin,LED_PWM_Level);         // Update LED Brightness in Message Center Sw's and Speakers.
-        SetClusterPower(ClusterRlyOn);                    // Turn On Instrument Cluster Power Relay.
+        SetClusterPower(ClusterRlyOn);                  // Turn On Instrument Cluster Power Relay.
     }
     else if(CLI_PwrFlag == true){                       // CLI Power Mode active.
-        IR_PwrTimer = millis();                         // Reset Automatic Power-up Timer.
+        IR_PwrTimer = 0;                                // Reset Automatic Power-up Timer.
         IR_PwrFlag = false;                             // Disable Automatic Power-up.
         if(OldCLIPwr != CLI_PwrFlag) {                  // CLI mode changed states.
             OldCLIPwr = true;
@@ -392,9 +409,9 @@ void UpdatePowerState(void)
             BackLightLvl = OldBlLvl;                    // Restore Cluster Backlighting intensity.
             serial_manager.println(F("Power State: CLI On"));
         }
-        SetClusterPower(ClusterRlyOn);                    // Turn On Instrument Cluster Power Relay.
+        SetClusterPower(ClusterRlyOn);                  // Turn On Instrument Cluster Power Relay.
     }
-    else if(millis() < IR_PwrTimer)  {
+    else if(IR_PwrTimer !=0 && current_millis-IR_PwrTimer < IRPWR_TIME) {
         if(IR_PwrFlag == false) {
             IR_PwrFlag = true;
             LED_PWM_Level = OldLedPWM;                  // Restore LED Intensity
@@ -402,11 +419,11 @@ void UpdatePowerState(void)
             BackLightLvl = OldBlLvl;                    // Restore Cluster Backlighting intensity.
             serial_manager.println(F("Power State: Remote On"));
         }
-        SetClusterPower(ClusterRlyOn);                    // Turn On Instrument Cluster Power Relay.
+        SetClusterPower(ClusterRlyOn);                  // Turn On Instrument Cluster Power Relay.
     }
     else {
-        IR_PwrTimer = millis();                         // Reset Automatic Power-up Timer.
-        if(OldIgnSwitch != RunSwitch) {              // Switch changed states, Power Off.
+        IR_PwrTimer = 0;                                // Reset Automatic Power-up Timer.
+        if(OldIgnSwitch != RunSwitch) {                 // Switch changed states, Power Off.
             Run_Sequencer(SequencerStop,0);             // Kill any running Animations.
             ClusterDefault(false);                      // Reset Gauges and indicators, but leave fuel level as-is.
             OldIgnSwitch = RunSwitch;
